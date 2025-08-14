@@ -26,4 +26,4 @@
 * 不支持且移除了 kotlinx-serialization 相关代码
 * 由于鸿蒙支持的时区有限，本仓不保证全球时区可用，参见[支持的系统时区-华为HarmonyOS开发者](https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-date-time#%E6%94%AF%E6%8C%81%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%97%B6%E5%8C%BA)；目前已测试 `Asia/Shanghai` 时区正常可用
 * 由于和官方仓代码已存在区别，暂无法与官方库直接混用
-* `Instant` 精度仅能获取到毫秒级
+* 系统当前时间精度仅能获取到毫秒级

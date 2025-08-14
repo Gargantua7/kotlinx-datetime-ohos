@@ -39,7 +39,7 @@ internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
                 return@memScoped buffer.toKString()
             }
 
-        } while (code == TIMESERVICE_ERR_INVALID_PARAMETER)
+        } while (code == TIMESERVICE_ERR_INVALID_PARAMETER && size <= 512u)
 
         error("TIMESERVICE_ERR_INTERNAL_ERROR")
     }
