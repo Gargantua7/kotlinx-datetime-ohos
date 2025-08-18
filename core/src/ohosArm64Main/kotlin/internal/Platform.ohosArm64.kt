@@ -2,15 +2,19 @@ package kotlinx.datetime.internal
 
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
 import kotlinx.datetime.Instant
 import kotlinx.datetime.UtcOffset
 import platform.framework.OH_TimeService_GetTimeZone
 import platform.framework.TIMESERVICE_ERR_INVALID_PARAMETER
 import platform.framework.TIMESERVICE_ERR_OK
-import platform.posix.time
+import platform.posix.CLOCK_REALTIME
+import platform.posix.clock_gettime
+import platform.posix.timespec
 
 internal actual val systemTzdb: TimeZoneDatabase
     get() = object: TimeZoneDatabase {
@@ -49,7 +53,12 @@ internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
 
 @OptIn(ExperimentalForeignApi::class)
 internal actual fun currentTime(): Instant {
-    return Instant.fromEpochSeconds(time(null))
+    val (seconds, nanos) = memScoped {
+        val ts = alloc<timespec>()
+        clock_gettime(CLOCK_REALTIME, ts.ptr)
+        ts.tv_sec to ts.tv_nsec
+    }
+    return Instant.fromEpochSeconds(seconds, nanos)
 }
 
 // see https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-date-time#%E6%94%AF%E6%8C%81%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%97%B6%E5%8C%BA
