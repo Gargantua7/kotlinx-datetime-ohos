@@ -20,3 +20,6 @@ fun getCurrentDateTime(): String = Clock.System.now().toLocalDateTime(TimeZone.c
 
 @CName("getTimeZoneOffset")
 fun getTimeZoneOffset(): Int = TimeZone.currentSystemDefault().offsetAt(Clock.System.now()).totalSeconds
+
+@CName("getAvailableTimeZoneIDs")
+fun getAvailableTimeZoneIDs() = TimeZone.availableZoneIds.sorted().joinToString()

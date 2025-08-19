@@ -6,3 +6,4 @@ export const getCurrentDateTime: () => string;
 export const getCurrentTimeZoneId: () => string;
 export const getCurrentTimestamp: () => number;
 export const getTimeZoneOffset: () => number;
+export const getAvailableTimeZoneIDs: () => string;

@@ -71,6 +71,14 @@ static napi_value GetTimeZoneOffset(napi_env env, napi_callback_info info)
     return result;
 }
 
+static napi_value GetAvailableTimeZoneIDs(napi_env env, napi_callback_info info) 
+{
+    const char* str = getAvailableTimeZoneIDs();
+    napi_value result;
+    napi_create_string_utf8(env, str, NAPI_AUTO_LENGTH, &result);
+    return result;
+}
+
 EXTERN_C_START
 static napi_value Init(napi_env env, napi_value exports)
 {
@@ -81,6 +89,7 @@ static napi_value Init(napi_env env, napi_value exports)
         { "getCurrentTimeZoneId", nullptr, GetCurrentTimeZoneId, nullptr, nullptr, nullptr, napi_default, nullptr },
         { "getCurrentTimestamp", nullptr, GetCurrentTimestamp, nullptr, nullptr, nullptr, napi_default, nullptr },
         { "getTimeZoneOffset", nullptr, GetTimeZoneOffset, nullptr, nullptr, nullptr, napi_default, nullptr },
+        { "getAvailableTimeZoneIDs", nullptr, GetAvailableTimeZoneIDs, nullptr, nullptr, nullptr, napi_default, nullptr },
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
     return exports;

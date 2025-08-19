@@ -106,7 +106,7 @@ private fun openDir(path: String, dir: RawDir): Set<String> = buildSet {
 
         if (isDir) {
             val nextDir = OH_ResourceManager_OpenRawDir(resmgr, "tzdb/$filePath")
-            addAll(openDir(filePath, dir))
+            addAll(openDir(filePath, nextDir))
             OH_ResourceManager_CloseRawDir(nextDir)
         } else {
             add(filePath)
