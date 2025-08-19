@@ -16,3 +16,5 @@ captures
 !*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
+/ohosApp/entry/libs/arm64-v8a/libkn.so
+/ohosApp/entry/src/main/cpp/include/libkn_api.h

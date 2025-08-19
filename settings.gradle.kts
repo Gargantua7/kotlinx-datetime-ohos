@@ -20,3 +20,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "kotlinx-datetime-ohos"
 include(":core")
+include(":sample")

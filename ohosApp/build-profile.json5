@@ -1,0 +1,57 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "/Users/Gargantua/.ohos/config/default_ohosApp_r1S9y0juLVPN8ly22QB0L8UP7xAsllAleetyOH6wWeE=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001B5B2AFA900D571E64D2886689E11DE92F77039480412FF01D3582EB85EC82A1BF2EA9BAE91740BE",
+          "profile": "/Users/Gargantua/.ohos/config/default_ohosApp_r1S9y0juLVPN8ly22QB0L8UP7xAsllAleetyOH6wWeE=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "/Users/Gargantua/.ohos/config/default_ohosApp_r1S9y0juLVPN8ly22QB0L8UP7xAsllAleetyOH6wWeE=.p12",
+          "storePassword": "0000001B05CC5E0BD6D2A5E8A1A3604592B35965F6C9100CB48D003EC410ED12EFCD5F848E5259F5C1E2F1"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "targetSdkVersion": "6.0.0(20)",
+        "compatibleSdkVersion": "5.0.3(15)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "nativeCompiler": "BiSheng",
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

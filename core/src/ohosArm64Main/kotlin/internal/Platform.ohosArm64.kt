@@ -1,33 +1,63 @@
+@file:OptIn(ExperimentalForeignApi::class, ExperimentalNativeApi::class)
 package kotlinx.datetime.internal
 
 import kotlinx.cinterop.ByteVar
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.allocArray
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.toKString
+import kotlinx.cinterop.usePinned
 import kotlinx.datetime.Instant
-import kotlinx.datetime.UtcOffset
 import platform.framework.OH_TimeService_GetTimeZone
 import platform.framework.TIMESERVICE_ERR_INVALID_PARAMETER
 import platform.framework.TIMESERVICE_ERR_OK
 import platform.posix.CLOCK_REALTIME
 import platform.posix.clock_gettime
 import platform.posix.timespec
+import platform.resource.OH_ResourceManager_CloseRawDir
+import platform.resource.OH_ResourceManager_CloseRawFile
+import platform.resource.OH_ResourceManager_GetRawFileCount
+import platform.resource.OH_ResourceManager_GetRawFileName
+import platform.resource.OH_ResourceManager_GetRawFileSize
+import platform.resource.OH_ResourceManager_IsRawDir
+import platform.resource.OH_ResourceManager_OpenRawDir
+import platform.resource.OH_ResourceManager_OpenRawFile
+import platform.resource.OH_ResourceManager_ReadRawFile
+import kotlin.experimental.ExperimentalNativeApi
 
 internal actual val systemTzdb: TimeZoneDatabase
     get() = object: TimeZoneDatabase {
 
-        override fun rulesForId(id: String): TimeZoneRules = supportTimezone[id]?.let { offset ->
-            TimeZoneRules(emptyList(), listOf(UtcOffset(offset)), null)
-        } ?: throw IllegalArgumentException("Unknown timezone $id")
+        override fun rulesForId(id: String): TimeZoneRules {
+            val filePath = "tzdb/$id"
+            val file = OH_ResourceManager_OpenRawFile(resmgr, filePath) ?: error("$filePath not found")
+            val size = OH_ResourceManager_GetRawFileSize(file)
+            val array = memScoped {
 
-        override fun availableTimeZoneIds(): Set<String> = supportTimezone.keys
+                val buffer = ByteArray(size.toInt())
+                buffer.usePinned {
+                    OH_ResourceManager_ReadRawFile(file, it.addressOf(0), size.toULong())
+                }
+                OH_ResourceManager_CloseRawFile(file)
+
+                buffer
+            }
+            return readTzFile(array).toTimeZoneRules()
+        }
+
+        override fun availableTimeZoneIds(): Set<String> {
+            val tzdbDir = OH_ResourceManager_OpenRawDir(resmgr, "tzdb")
+            val ids = openDir("", tzdbDir)
+            OH_ResourceManager_CloseRawDir(tzdbDir)
+            return ids
+        }
 
     }
 
-@OptIn(ExperimentalForeignApi::class)
 internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
     val zone = memScoped {
 
@@ -51,7 +81,6 @@ internal actual fun currentSystemDefaultZone(): Pair<String, TimeZoneRules?> {
     return zone to systemTzdb.rulesForId(zone)
 }
 
-@OptIn(ExperimentalForeignApi::class)
 internal actual fun currentTime(): Instant {
     val (seconds, nanos) = memScoped {
         val ts = alloc<timespec>()
@@ -61,37 +90,30 @@ internal actual fun currentTime(): Instant {
     return Instant.fromEpochSeconds(seconds, nanos)
 }
 
-// see https://developer.huawei.com/consumer/cn/doc/harmonyos-references/js-apis-date-time#%E6%94%AF%E6%8C%81%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%97%B6%E5%8C%BA
-private val supportTimezone = mapOf(
-    "Antarctica/McMurdo" to 12,
-    "America/Argentina/Buenos_Aires" to -3,
-    "Australia/Sydney" to 10,
-    "America/Noronha" to -2,
-    "America/St_Johns" to -3,
-    "Africa/Kinshasa" to 1,
-    "America/Santiago" to -3,
-    "Asia/Shanghai" to 8,
-    "Asia/Nicosia" to 3,
-    "Europe/Berlin" to 2,
-    "America/Guayaquil" to -5,
-    "Europe/Madrid" to 2,
-    "Pacific/Pohnpei" to 11,
-    "America/Godthab" to -2,
-    "Asia/Jakarta" to 7,
-    "Pacific/Tarawa" to 12,
-    "Asia/Almaty" to 6,
-    "Pacific/Majuro" to 12,
-    "Asia/Ulaanbaatar" to 8,
-    "America/Mexico_City" to -5,
-    "Asia/Kuala_Lumpur" to 8,
-    "Pacific/Auckland" to 12,
-    "Pacific/Tahiti" to -10,
-    "Pacific/Port_Moresby" to 10,
-    "Asia/Gaza" to 3,
-    "Europe/Lisbon" to 1,
-    "Europe/Moscow" to 3,
-    "Europe/Kiev" to 3,
-    "Pacific/Wake" to 12,
-    "America/New_York" to -4,
-    "Asia/Tashkent" to 5
-)
+
+private typealias NativeResourceManager = CPointer<cnames.structs.NativeResourceManager>?
+private typealias RawDir = CPointer<cnames.structs.RawDir>?
+private typealias RawFile = CPointer<cnames.structs.RawFile>?
+
+private var resmgr: NativeResourceManager? = null
+
+private fun openDir(path: String, dir: RawDir): Set<String> = buildSet {
+    val count = OH_ResourceManager_GetRawFileCount(dir)
+    repeat(count) { index ->
+        val file = OH_ResourceManager_GetRawFileName(dir, index)?.toKString() ?: return@repeat
+        val filePath = "$path/$file".removePrefix("/")
+        val isDir = OH_ResourceManager_IsRawDir(resmgr, "tzdb/$filePath")
+
+        if (isDir) {
+            val nextDir = OH_ResourceManager_OpenRawDir(resmgr, "tzdb/$filePath")
+            addAll(openDir(filePath, dir))
+            OH_ResourceManager_CloseRawDir(nextDir)
+        } else {
+            add(filePath)
+        }
+    }
+}
+
+fun initNativeResourceManagerForDatetime(mgr: NativeResourceManager) {
+    resmgr = mgr
+}
