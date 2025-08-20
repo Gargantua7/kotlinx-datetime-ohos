@@ -47,6 +47,12 @@ mavenPublishing {
 
         developers {
             developer {
+                name = "JetBrains Team"
+                organization = "JetBrains"
+                organizationUrl = "https://www.jetbrains.com"
+            }
+
+            developer {
                 name = "Gargantua7"
                 url = "https://github.com/Gargantua7"
                 email = "gargantua7@qq.com"
