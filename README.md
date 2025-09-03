@@ -3,6 +3,11 @@
 
 ***
 
+**fork 自官方仓库支持`kotlinx-serialization`的完整版本：[kotlinx-datetime/ohos-compat](https://github.com/Gargantua7/kotlinx-datetime)**
+> **此仓库将废弃**
+
+***
+
 基于 kotlinx-datetime(0.6.2) 和 [KuiklyBase-kotlin](https://github.com/Tencent-TDS/KuiklyBase-kotlin) 构建目标平台 ohosArm64 的时间库
 
 由于目前不支持 kotlinx-serialization，所以未直接 fork 官方仓仅复制所需源集并且移除了 kotlinx-serialization 依赖的相关代码
